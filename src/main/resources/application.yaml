@@ -2,3 +2,6 @@ app:
   grpc:
     server:
       port: 50051
+  jwt:
+    expirationTime: 43200
+    secret-key: secret

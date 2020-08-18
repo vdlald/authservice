@@ -4,5 +4,11 @@
       "name": "app.grpc.server.port",
       "type": "java.lang.Integer",
       "description": "gRPC server port."
-  }
-] }
+    },
+    {
+      "name": "app.jwt.expirationTime",
+      "type": "java.lang.Integer",
+      "description": "JWT life time in seconds."
+    }
+  ]
+}
