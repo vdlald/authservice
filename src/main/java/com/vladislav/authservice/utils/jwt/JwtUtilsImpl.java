@@ -3,6 +3,7 @@ package com.vladislav.authservice.utils.jwt;
 import com.vladislav.authservice.documents.User;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -31,7 +32,7 @@ public class JwtUtilsImpl implements JwtUtils {
                 .claim("roles", user.getRoles())
                 .setIssuedAt(new Date(createdAt))
                 .setExpiration(new Date(expiredAt))
-                .signWith(signatureAlgorithm, secret.getBytes(StandardCharsets.UTF_8))  // todo: refactor this
+                .signWith(Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8)))
                 .compact();
     }
 }
