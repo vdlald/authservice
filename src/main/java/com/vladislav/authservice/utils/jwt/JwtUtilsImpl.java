@@ -19,9 +19,9 @@ public class JwtUtilsImpl implements JwtUtils {
     private String secret;
 
     @Override
-    public String createUserJwtToken(User user) {
+    public String createUserJwt(User user) {
         final long createdAt = System.currentTimeMillis();
-        final long expiredAt = createdAt + expirationTime;
+        final long expiredAt = createdAt + expirationTime * 60;
 
         return Jwts.builder()
                 .claim("userId", user.getId())
