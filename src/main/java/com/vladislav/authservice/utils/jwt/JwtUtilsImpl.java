@@ -2,7 +2,6 @@ package com.vladislav.authservice.utils.jwt;
 
 import com.vladislav.authservice.documents.User;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -12,8 +11,6 @@ import java.util.Date;
 
 @Component
 public class JwtUtilsImpl implements JwtUtils {
-
-    private static final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
 
     @Value("${app.jwt.expirationTime}")
     private Integer expirationTime;
