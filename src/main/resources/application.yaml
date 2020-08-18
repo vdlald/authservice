@@ -1,0 +1,4 @@
+app:
+  grpc:
+    server:
+      port: 50051
