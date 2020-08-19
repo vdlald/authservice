@@ -2,21 +2,22 @@ package com.vladislav.authservice.utils.jwt;
 
 import com.vladislav.authservice.documents.User;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.nio.charset.StandardCharsets;
+import javax.crypto.SecretKey;
 import java.util.Date;
 
 @Component
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class JwtUtilsImpl implements JwtUtils {
 
     @Value("${app.jwt.expirationTime}")
     private Integer expirationTime;
 
-    @Value("${app.jwt.secret-key}")
-    private String secret;
+    private final SecretKey jwtSecretKey;
 
     @Override
     public String createUserJwt(User user) {
@@ -29,7 +30,7 @@ public class JwtUtilsImpl implements JwtUtils {
                 .claim("roles", user.getRoles())
                 .setIssuedAt(new Date(createdAt))
                 .setExpiration(new Date(expiredAt))
-                .signWith(Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8)))
+                .signWith(jwtSecretKey)
                 .compact();
     }
 }
