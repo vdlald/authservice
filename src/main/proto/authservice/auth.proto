@@ -24,7 +24,9 @@ message AuthenticateUserResponse {
 }
 
 service UserService {
+  // May produce ALREADY_EXISTS exception
   rpc RegisterUser(RegisterUserRequest) returns (RegisterUserResponse) {};
 
+  // May produce UNAUTHENTICATED and NOT_FOUND exception
   rpc AuthenticateUser(AuthenticateUserRequest) returns (AuthenticateUserResponse) {};
 }
