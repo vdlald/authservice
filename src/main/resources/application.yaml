@@ -3,5 +3,6 @@ app:
     server:
       port: 50051
   jwt:
-    expirationTime: 43200
+    refresh-expiration-time: 43200
+    access-expiration-time: 30
     secret-key: secretsecretsecretsecretsecretsecretsecret

@@ -21,6 +21,16 @@ message AuthenticateUserRequest {
 
 message AuthenticateUserResponse {
   string jwt = 1;
+  string refreshToken = 2;
+}
+
+message RefreshSessionRequest {
+  string refreshToken = 1;
+}
+
+message RefreshSessionResponse {
+  string jwt = 1;
+  string refreshToken = 2;
 }
 
 service UserService {
@@ -29,4 +39,6 @@ service UserService {
 
   // May produce UNAUTHENTICATED and NOT_FOUND exception
   rpc AuthenticateUser(AuthenticateUserRequest) returns (AuthenticateUserResponse) {};
+
+  rpc RefreshSession(RefreshSessionRequest) returns (RefreshSessionResponse) {};
 }

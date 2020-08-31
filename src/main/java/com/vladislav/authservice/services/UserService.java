@@ -2,8 +2,8 @@ package com.vladislav.authservice.services;
 
 import com.proto.auth.*;
 import com.vladislav.authservice.documents.User;
+import com.vladislav.authservice.exceptions.RefreshTokenExpired;
 import com.vladislav.authservice.repositories.UserRepository;
-import com.vladislav.authservice.utils.jwt.JwtUtils;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
@@ -22,16 +22,14 @@ public class UserService extends UserServiceGrpc.UserServiceImplBase {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtUtils jwtUtils;
+    private final JwtService jwtService;
 
     @Override
     public void registerUser(RegisterUserRequest request, StreamObserver<RegisterUserResponse> responseObserver) {
         final String username = request.getUsername().toLowerCase();
         final User user = new User()
-                .setId(UUID.randomUUID())
                 .setUsername(username)
-                .setPassword(passwordEncoder.encode(request.getPassword()))
-                .setRoles(List.of(User.Role.USER));
+                .setPassword(passwordEncoder.encode(request.getPassword()));
 
         if (userRepository.findByUsername(username).isPresent()) {
             final StatusRuntimeException exception = Status.ALREADY_EXISTS
@@ -52,16 +50,28 @@ public class UserService extends UserServiceGrpc.UserServiceImplBase {
     }
 
     @Override
-    public void authenticateUser(AuthenticateUserRequest request, StreamObserver<AuthenticateUserResponse> responseObserver) {
+    public void authenticateUser(
+            AuthenticateUserRequest request, StreamObserver<AuthenticateUserResponse> responseObserver
+    ) {
         final String username = request.getUsername().toLowerCase();
         final String password = request.getPassword();
 
         final Optional<User> optionalUser = userRepository.findByUsername(username);
         if (optionalUser.isPresent()) {
             final User user = optionalUser.get();
+
             if (passwordEncoder.matches(password, user.getPassword())) {
-                final String jwt = jwtUtils.createUserJwt(user);
-                final AuthenticateUserResponse response = AuthenticateUserResponse.newBuilder().setJwt(jwt).build();
+                final String jwt = jwtService.createUserAccessJwt(user);
+                final User.RefreshToken userRefreshToken = jwtService.createUserRefreshToken();
+
+                user.getRefreshTokens().add(userRefreshToken);
+                userRepository.save(user);
+
+                final AuthenticateUserResponse response = AuthenticateUserResponse.newBuilder()
+                        .setJwt(jwt)
+                        .setRefreshToken(userRefreshToken.getRefreshToken().toString())
+                        .build();
+
                 responseObserver.onNext(response);
                 responseObserver.onCompleted();
             } else {
@@ -75,6 +85,38 @@ public class UserService extends UserServiceGrpc.UserServiceImplBase {
                     .withDescription(String.format("User with username: %s not found", username))
                     .asRuntimeException();
             responseObserver.onError(exception);
+        }
+    }
+
+    @Override
+    public void refreshSession(RefreshSessionRequest request, StreamObserver<RefreshSessionResponse> responseObserver) {
+        final UUID refreshToken = UUID.fromString(request.getRefreshToken());
+        final Optional<User> optionalUser = userRepository.findByRefreshTokens_RefreshToken(refreshToken);
+
+        if (optionalUser.isPresent()) {
+            final User user = optionalUser.get();
+            final List<User.RefreshToken> refreshTokens = user.getRefreshTokens();
+            for (User.RefreshToken token : refreshTokens) {
+                if (token.getRefreshToken().equals(refreshToken)) {
+                    try {
+                        jwtService.updateRefreshToken(token);
+                        userRepository.save(user);
+
+                        responseObserver.onNext(RefreshSessionResponse.newBuilder()
+                                .setRefreshToken(token.getRefreshToken().toString())
+                                .setJwt(jwtService.createUserAccessJwt(user))
+                                .build());
+                        responseObserver.onCompleted();
+                    } catch (RefreshTokenExpired e) {
+                        responseObserver.onError(Status.UNAUTHENTICATED
+                                .withDescription(e.getMessage())
+                                .asRuntimeException());
+                    }
+                    break;
+                }
+            }
+        } else {
+            responseObserver.onError(Status.UNAUTHENTICATED.asRuntimeException());
         }
     }
 }

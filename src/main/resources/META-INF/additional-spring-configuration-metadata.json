@@ -6,9 +6,9 @@
       "description": "gRPC server port."
     },
     {
-      "name": "app.jwt.expirationTime",
+      "name": "app.jwt.access-expiration-time",
       "type": "java.lang.Integer",
-      "description": "JWT life time in seconds."
+      "description": "JWT life time in minutes."
     }
   ]
 }
