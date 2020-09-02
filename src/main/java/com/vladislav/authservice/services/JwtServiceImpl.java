@@ -9,7 +9,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.UUID;
 
@@ -27,15 +29,14 @@ public class JwtServiceImpl implements JwtService {
 
     @Override
     public String createUserAccessJwt(User user) {
-        final long createdAt = System.currentTimeMillis();
-        final long expiredAt = createdAt + accessExpirationTime * 60 * 60;
-
+        final Instant createdAt = Instant.now();
+        final Instant expiredAt = createdAt.plus(accessExpirationTime, ChronoUnit.MINUTES);
         return Jwts.builder()
                 .claim("userId", user.getId())
                 .claim("username", user.getUsername())
                 .claim("roles", user.getRoles())
-                .setIssuedAt(new Date(createdAt))
-                .setExpiration(new Date(expiredAt))
+                .setIssuedAt(Date.from(createdAt))
+                .setExpiration(Date.from(expiredAt))
                 .signWith(jwtSecretKey)
                 .compact();
     }
