@@ -40,5 +40,6 @@ service UserService {
   // May produce UNAUTHENTICATED and NOT_FOUND exception
   rpc AuthenticateUser(AuthenticateUserRequest) returns (AuthenticateUserResponse) {};
 
+  // May produce UNAUTHENTICATED if Refresh token expired
   rpc RefreshSession(RefreshSessionRequest) returns (RefreshSessionResponse) {};
 }
