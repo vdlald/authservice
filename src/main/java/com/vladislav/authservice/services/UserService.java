@@ -25,7 +25,9 @@ public class UserService extends UserServiceGrpc.UserServiceImplBase {
     private final JwtService jwtService;
 
     @Override
-    public void registerUser(RegisterUserRequest request, StreamObserver<RegisterUserResponse> responseObserver) {
+    public void registerUser(
+            UserRegistrationRequest request, StreamObserver<UserRegistrationResponse> responseObserver
+    ) {
         final String username = request.getUsername().toLowerCase();
         final User user = new User()
                 .setUsername(username)
@@ -41,7 +43,7 @@ public class UserService extends UserServiceGrpc.UserServiceImplBase {
 
         final User savedUser = userRepository.save(user);
 
-        final RegisterUserResponse response = RegisterUserResponse.newBuilder()
+        final UserRegistrationResponse response = UserRegistrationResponse.newBuilder()
                 .setUserId(savedUser.getId().toString())
                 .build();
 
@@ -51,7 +53,7 @@ public class UserService extends UserServiceGrpc.UserServiceImplBase {
 
     @Override
     public void authenticateUser(
-            AuthenticateUserRequest request, StreamObserver<AuthenticateUserResponse> responseObserver
+            UserAuthenticationRequest request, StreamObserver<UserAuthenticationResponse> responseObserver
     ) {
         final String username = request.getUsername().toLowerCase();
         final String password = request.getPassword();
@@ -67,7 +69,7 @@ public class UserService extends UserServiceGrpc.UserServiceImplBase {
                 user.getRefreshTokens().add(userRefreshToken);
                 userRepository.save(user);
 
-                final AuthenticateUserResponse response = AuthenticateUserResponse.newBuilder()
+                final UserAuthenticationResponse response = UserAuthenticationResponse.newBuilder()
                         .setJwt(jwt)
                         .setRefreshToken(userRefreshToken.getRefreshToken().toString())
                         .build();

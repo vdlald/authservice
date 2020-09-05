@@ -5,21 +5,21 @@ package auth;
 option java_package = "com.proto.auth";
 option java_multiple_files = true;
 
-message RegisterUserRequest {
-  string username = 1;
+message UserRegistrationRequest {
+  string username = 1;  // Register does not matter
   string password = 2;
 }
 
-message RegisterUserResponse {
+message UserRegistrationResponse {
   string userId = 1;
 }
 
-message AuthenticateUserRequest {
-  string username = 1;
+message UserAuthenticationRequest {
+  string username = 1;  // Register does not matter
   string password = 2;
 }
 
-message AuthenticateUserResponse {
+message UserAuthenticationResponse {
   string jwt = 1;
   string refreshToken = 2;
 }
@@ -35,10 +35,10 @@ message RefreshSessionResponse {
 
 service UserService {
   // May produce ALREADY_EXISTS exception
-  rpc RegisterUser(RegisterUserRequest) returns (RegisterUserResponse) {};
+  rpc RegisterUser(UserRegistrationRequest) returns (UserRegistrationResponse) {};
 
   // May produce UNAUTHENTICATED and NOT_FOUND exception
-  rpc AuthenticateUser(AuthenticateUserRequest) returns (AuthenticateUserResponse) {};
+  rpc AuthenticateUser(UserAuthenticationRequest) returns (UserAuthenticationResponse) {};
 
   // May produce UNAUTHENTICATED if Refresh token expired
   rpc RefreshSession(RefreshSessionRequest) returns (RefreshSessionResponse) {};
